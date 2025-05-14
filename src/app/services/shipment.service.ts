@@ -1,31 +1,14 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable, of, throwError } from "rxjs";
-import { catchError, delay, map, tap } from "rxjs/operators";
+import { HttpClient } from "@angular/common/http";
+import { Observable, throwError } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 import { Shipment } from "../models/shipment.model";
 
 @Injectable({ providedIn: "root" })
 export class ShipmentService {
-  private shipments: Shipment[] = [];
-  private shipmentsSubject = new BehaviorSubject<Shipment[]>([]);
-  public shipments$ = this.shipmentsSubject.asObservable();
+  private readonly API_URL = "/api/shipments";
 
-  constructor() {
-    this.seedShipments();
-  }
-
-  private seedShipments() {
-    const statuses = ["Pending", "Shipped", "Delivered"] as const;
-    for (let i = 1; i <= 123; i++) {
-      this.shipments.push({
-        id: i,
-        recipientName: `Recipient ${i}`,
-        status: statuses[i % 3],
-        creationDate: new Date(2024, 0, 1 + i).toISOString(),
-        desiredDeliveryDate: new Date(2024, 0, 10 + i).toISOString(),
-      });
-    }
-    this.shipmentsSubject.next(this.shipments);
-  }
+  constructor(private http: HttpClient) {}
 
   fetchShipments(params: {
     page: number;
@@ -35,10 +18,9 @@ export class ShipmentService {
     sortField?: keyof Shipment;
     sortDirection?: "asc" | "desc";
   }): Observable<{ data: Shipment[]; total: number }> {
-    return of(this.shipments).pipe(
-      delay(300),
-      map((allShipments) => {
-        let data = [...allShipments];
+    return this.http.get<Shipment[]>(this.API_URL).pipe(
+      map((shipments) => {
+        let data = [...shipments];
 
         // Search
         if (params.searchTerm) {
@@ -79,62 +61,33 @@ export class ShipmentService {
     );
   }
 
-  addShipment(shipment: Shipment): Observable<void> {
-    return of(void 0).pipe(
-      delay(300),
-      tap(() => {
-        shipment.id = this.shipments.length + 1;
-        shipment.creationDate = new Date().toISOString();
-        this.shipments.push(shipment);
-        this.shipmentsSubject.next(this.shipments);
-      }),
-      catchError(() => throwError(() => new Error("Failed to add shipment")))
-    );
+  addShipment(shipment: Shipment): Observable<Shipment> {
+    return this.http
+      .post<Shipment>(this.API_URL, shipment)
+      .pipe(
+        catchError(() => throwError(() => new Error("Failed to add shipment")))
+      );
   }
 
-  deleteShipments(ids: number[]): Observable<void> {
-    return of(void 0).pipe(
-      delay(300),
-      tap(() => {
-        this.shipments = this.shipments.filter((s) => !ids.includes(s.id));
-        this.shipmentsSubject.next(this.shipments);
-      }),
-      catchError(() =>
-        throwError(() => new Error("Failed to delete shipments"))
-      )
-    );
+  deleteShipments(ids: number[]): Observable<void[]> {
+    return new Observable<void[]>((observer) => {
+      const requests = ids.map((id) =>
+        this.http.delete<void>(`${this.API_URL}/${id}`).toPromise()
+      );
+      Promise.all(requests)
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        })
+        .catch((err) => observer.error("Failed to delete shipments"));
+    });
   }
 
   clearAll(): Observable<void> {
-    return of(void 0).pipe(
-      delay(300),
-      tap(() => {
-        this.shipments = [];
-        this.shipmentsSubject.next([]);
-      })
-    );
+    return this.http.delete<void>(`${this.API_URL}/clear`);
   }
 
   resetShipments(): Observable<void> {
-    return of(void 0).pipe(
-      delay(300),
-      tap(() => {
-        this.seedShipments(); // or whatever method resets initial data
-        this.shipmentsSubject.next(this.shipments);
-      })
-    );
+    return this.http.post<void>(`${this.API_URL}/reset`, {});
   }
-  // updateShipment(shipment: Shipment): Observable<void> {
-  //   return of(void 0).pipe(
-  //     delay(300),
-  //     tap(() => {
-  //       const index = this.shipments.findIndex((s) => s.id === shipment.id);
-  //       if (index > -1) {
-  //         this.shipments[index] = shipment;
-  //         this.shipmentsSubject.next(this.shipments);
-  //       }
-  //     }),
-  //     catchError(() => throwError(() => new Error("Failed to update shipment")))
-  //   );
-  // }
 }
