@@ -33,6 +33,12 @@ export class InMemoryShipmentService implements InMemoryDbService {
     return { shipments };
   }
 
+  genId(shipments: Shipment[]): number {
+    return shipments.length > 0
+      ? Math.max(...shipments.map((s) => s.id)) + 1
+      : 1;
+  }
+
   delete(reqInfo: RequestInfo): Observable<ResponseOptions> | undefined {
     if (reqInfo.collectionName === "shipments" && reqInfo.id === "clear") {
       const db = reqInfo.utils.getDb() as { shipments: Shipment[] };

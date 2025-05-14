@@ -22,7 +22,6 @@ export class ShipmentService {
       map((shipments) => {
         let data = [...shipments];
 
-        // Search
         if (params.searchTerm) {
           const term = params.searchTerm.toLowerCase();
           data = data.filter((s) =>
@@ -30,12 +29,10 @@ export class ShipmentService {
           );
         }
 
-        // Filter
         if (params.statusFilter) {
           data = data.filter((s) => s.status === params.statusFilter);
         }
 
-        // Sort
         if (params.sortField) {
           data.sort((a, b) => {
             const aVal = a[params.sortField!];

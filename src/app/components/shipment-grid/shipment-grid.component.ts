@@ -41,7 +41,7 @@ export class ShipmentGridComponent implements OnInit {
       checkboxSelection: true,
       headerCheckboxSelection: true,
       width: 40,
-      suppressMovable: true, // ✅ still valid
+      suppressMovable: true,
     },
     { field: "id", headerName: "ID", sortable: true },
     { field: "recipientName", headerName: "Recipient", sortable: true },

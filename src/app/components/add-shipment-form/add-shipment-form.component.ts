@@ -69,17 +69,16 @@ export class AddShipmentFormComponent {
     if (this.shipmentForm.invalid) return;
     this.isSubmitting = true;
 
-    const newShipment: Shipment = {
-      id: 0,
+    const newShipment: Omit<Shipment, "id"> = {
       recipientName: this.shipmentForm.value.recipientName,
       status: this.shipmentForm.value.status,
-      creationDate: "",
+      creationDate: new Date().toISOString(),
       desiredDeliveryDate: new Date(
         this.shipmentForm.value.desiredDeliveryDate
       ).toISOString(),
     };
 
-    this.shipmentService.addShipment(newShipment).subscribe({
+    this.shipmentService.addShipment(newShipment as Shipment).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.snackBar.open("Shipment added successfully!", "Close", {
