@@ -212,6 +212,7 @@ export class ShipmentGridComponent implements OnInit {
       error: () => {
         this.snackBar.open("Failed to delete shipments", "Close", {
           duration: 3000,
+          panelClass: ["error-snackbar"],
         });
       },
     });

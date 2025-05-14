@@ -6,7 +6,7 @@ export class ErrorHandlerService {
   constructor(private snackBar: MatSnackBar) {}
 
   handle(message: string = "Something went wrong") {
-    this.snackBar.open(`❌ ${message}`, "Close", {
+    this.snackBar.open(`${message}`, "Close", {
       duration: 4000,
       panelClass: ["error-snackbar"],
     });

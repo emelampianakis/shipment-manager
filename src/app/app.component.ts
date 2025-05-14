@@ -6,6 +6,7 @@ import { ShipmentService } from "./services/shipment.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
+import { ErrorHandlerService } from "./services/error-handler.service";
 
 @Component({
   selector: "app-root",
@@ -25,7 +26,8 @@ export class AppComponent {
 
   constructor(
     private shipmentService: ShipmentService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   deleteAll() {
@@ -61,9 +63,6 @@ export class AppComponent {
   }
 
   simulateError() {
-    this.snackBar.open("❌ Simulated error occurred!", "Close", {
-      duration: 4000,
-      panelClass: ["error-snackbar"],
-    });
+    this.errorHandler.handle("Simulated error occurred!");
   }
 }

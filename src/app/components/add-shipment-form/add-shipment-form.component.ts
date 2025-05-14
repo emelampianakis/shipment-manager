@@ -83,6 +83,7 @@ export class AddShipmentFormComponent {
         this.isSubmitting = false;
         this.snackBar.open("Shipment added successfully!", "Close", {
           duration: 3000,
+          panelClass: ["success-snackbar"],
         });
         this.dialogRef.close(true);
       },
@@ -90,6 +91,7 @@ export class AddShipmentFormComponent {
         this.isSubmitting = false;
         this.snackBar.open("Failed to add shipment", "Close", {
           duration: 3000,
+          panelClass: ["error-snackbar"],
         });
       },
     });
