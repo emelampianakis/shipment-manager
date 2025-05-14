@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/app.component.scss"],
+  "sourcesContent": ["main {\n  min-height: 80vh;\n}\n\nfooter {\n  border-top: 1px solid #ccc;\n  margin-top: 2rem;\n}\n\n.app-toolbar {\n  .toolbar-content {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    flex-wrap: wrap;\n    width: 100%;\n    gap: 1rem;\n\n    .title {\n      font-size: 1.5rem;\n      font-weight: 600;\n    }\n\n    .subtitle {\n      font-size: 0.85rem;\n      opacity: 0.85;\n      max-width: 600px;\n    }\n\n    .actions {\n      display: flex;\n      flex-wrap: wrap;\n      gap: 0.5rem;\n    }\n  }\n}\n"],
+  "mappings": ";AAAA;AACE,cAAA;;AAGF;AACE,cAAA,IAAA,MAAA;AACA,cAAA;;AAIA,CAAA,YAAA,CAAA;AACE,WAAA;AACA,mBAAA;AACA,eAAA;AACA,aAAA;AACA,SAAA;AACA,OAAA;;AAEA,CARF,YAQE,CARF,gBAQE,CAAA;AACE,aAAA;AACA,eAAA;;AAGF,CAbF,YAaE,CAbF,gBAaE,CAAA;AACE,aAAA;AACA,WAAA;AACA,aAAA;;AAGF,CAnBF,YAmBE,CAnBF,gBAmBE,CAAA;AACE,WAAA;AACA,aAAA;AACA,OAAA;;",
+  "names": []
+}

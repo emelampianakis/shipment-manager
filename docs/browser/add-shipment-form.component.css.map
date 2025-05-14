@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/components/add-shipment-form/add-shipment-form.component.scss"],
+  "sourcesContent": [".dialog-content {\n  padding: 1rem 0.5rem;\n}\n\n.full-width {\n  width: 100%;\n  margin-bottom: 1.5rem;\n}\n\n.actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 1rem;\n  margin-top: 1.5rem;\n}\n\nbutton {\n  min-width: 100px;\n}\n\nmat-form-field {\n  display: block;\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA,KAAA;;AAGF,CAAA;AACE,SAAA;AACA,iBAAA;;AAGF,CAAA;AACE,WAAA;AACA,mBAAA;AACA,OAAA;AACA,cAAA;;AAGF;AACE,aAAA;;AAGF;AACE,WAAA;;",
+  "names": []
+}
