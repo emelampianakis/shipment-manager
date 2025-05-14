@@ -72,10 +72,10 @@ export class AddShipmentFormComponent {
     const newShipment: Omit<Shipment, "id"> = {
       recipientName: this.shipmentForm.value.recipientName,
       status: this.shipmentForm.value.status,
-      creationDate: new Date().toISOString(),
+      creationDate: new Date(),
       desiredDeliveryDate: new Date(
         this.shipmentForm.value.desiredDeliveryDate
-      ).toISOString(),
+      ),
     };
 
     this.shipmentService.addShipment(newShipment as Shipment).subscribe({

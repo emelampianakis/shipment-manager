@@ -24,8 +24,8 @@ export class InMemoryShipmentService implements InMemoryDbService {
         id: i,
         recipientName: `Recipient ${i}`,
         status: statuses[i % 3],
-        creationDate: new Date(2024, 0, 1 + i).toISOString(),
-        desiredDeliveryDate: new Date(2024, 0, 10 + i).toISOString(),
+        creationDate: new Date(2024, 0, 1 + i),
+        desiredDeliveryDate: new Date(2024, 0, 10 + i),
       });
     }
 
