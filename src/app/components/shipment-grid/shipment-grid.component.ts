@@ -15,6 +15,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { AgGridModule } from "ag-grid-angular";
 import { MatIconModule } from "@angular/material/icon";
 import { ErrorHandlerService } from "../../services/error-handler.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: "app-shipment-grid",
@@ -59,13 +60,13 @@ export class ShipmentGridComponent implements OnInit {
       field: "creationDate",
       headerName: "Created At",
       sortable: true,
-      valueFormatter: this.formatDateTime,
+      valueFormatter: ShipmentGridComponent.formatDateTime,
     },
     {
       field: "desiredDeliveryDate",
       headerName: "Delivery Date",
       sortable: true,
-      valueFormatter: this.formatDateTime,
+      valueFormatter: ShipmentGridComponent.formatDateTime,
     },
   ];
 
@@ -78,12 +79,12 @@ export class ShipmentGridComponent implements OnInit {
   searchTerm = "";
   statusFilter = "";
   loading = false;
-  error = "";
   sortField: keyof Shipment | null = null;
   sortDirection: "asc" | "desc" | null = null;
   totalPages = 0;
   pageSizes = [5, 10, 20];
   hasSelection = false;
+  private subscription = new Subscription();
 
   constructor(
     private shipmentService: ShipmentService,
@@ -93,7 +94,30 @@ export class ShipmentGridComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadData();
+    this.loading = true;
+    this.shipmentService.fetchAndCacheShipments().subscribe({
+      next: () => {
+        this.subscription.add(
+          this.shipmentService.filteredShipments$.subscribe({
+            next: (res) => {
+              this.rowData = res.data;
+              this.totalRows = res.total;
+              this.displayedCount = res.data.length;
+              this.totalPages = Math.ceil(this.totalRows / this.pageSize);
+              this.loading = false;
+            },
+            error: (err) => {
+              this.errorHandler.handle(err.message);
+              this.loading = false;
+            },
+          })
+        );
+      },
+      error: (err) => {
+        this.errorHandler.handle(err.message);
+        this.loading = false;
+      },
+    });
   }
 
   onGridReady(params: GridReadyEvent) {
@@ -113,7 +137,7 @@ export class ShipmentGridComponent implements OnInit {
     this.hasSelection = this.gridApi.getSelectedRows().length > 0;
   }
 
-  formatDateTime(params: any): string {
+  static formatDateTime(params: any): string {
     const raw = params.value;
     if (!raw) return "";
     const date = new Date(raw);
@@ -128,15 +152,69 @@ export class ShipmentGridComponent implements OnInit {
 
   onSortChanged() {
     const columnState = this.gridApi.getColumnState();
-    const sortedColumns = columnState.filter((col) => col.sort != null);
-    if (sortedColumns.length > 0) {
-      this.sortField = sortedColumns[0].colId as keyof Shipment;
-      this.sortDirection = sortedColumns[0].sort as "asc" | "desc";
-    } else {
-      this.sortField = null;
-      this.sortDirection = null;
+    const sorted = columnState.find((col) => col.sort);
+    this.sortField = sorted ? (sorted.colId as keyof Shipment) : null;
+    this.sortDirection = sorted ? (sorted.sort as "asc" | "desc") : null;
+
+    this.updateFilters();
+  }
+
+  onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm = input.value;
+    this.currentPage = 0;
+    this.updateFilters();
+  }
+
+  onStatusFilterChange(status: string) {
+    this.statusFilter = status;
+    this.currentPage = 0;
+    this.updateFilters();
+  }
+
+  onPageChange(delta: number) {
+    const nextPage = this.currentPage + delta;
+    if (nextPage >= 0 && nextPage < this.totalPages) {
+      this.currentPage = nextPage;
+      this.updateFilters();
     }
-    this.loadData();
+  }
+
+  onPageSizeChange(newSize: string | number) {
+    this.pageSize = Number(newSize);
+    this.currentPage = 0;
+    this.updateFilters();
+  }
+
+  updateFilters() {
+    this.shipmentService.updateFilters({
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      searchTerm: this.searchTerm,
+      statusFilter: this.statusFilter,
+      sortField: this.sortField ?? undefined,
+      sortDirection: this.sortDirection ?? undefined,
+    });
+  }
+
+  onDeleteSelected() {
+    const selected = this.gridApi.getSelectedRows();
+    const ids = selected.map((s) => s.id);
+    if (!ids.length) return;
+
+    this.shipmentService.deleteShipments(ids).subscribe({
+      next: () => {
+        this.snackBar.open("Selected shipments deleted.", "Close", {
+          duration: 3000,
+        });
+        this.updateFilters();
+      },
+      error: () => {
+        this.snackBar.open("Failed to delete shipments", "Close", {
+          duration: 3000,
+        });
+      },
+    });
   }
 
   onCellValueChanged(event: any) {
@@ -150,93 +228,16 @@ export class ShipmentGridComponent implements OnInit {
     );
   }
 
-  loadData(): void {
-    this.loading = true;
-    this.error = "";
-    this.shipmentService
-      .fetchShipments({
-        page: this.currentPage,
-        pageSize: this.pageSize,
-        searchTerm: this.searchTerm,
-        statusFilter: this.statusFilter,
-        sortField: this.sortField ?? undefined,
-        sortDirection: this.sortDirection ?? undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.rowData = res.data;
-          this.totalRows = res.total;
-          this.displayedCount = res.data.length;
-          this.totalPages = Math.ceil(this.totalRows / this.pageSize);
-          this.loading = false;
-        },
-        error: (err) => {
-          this.errorHandler.handle(err.message);
-          this.loading = false;
-        },
-      });
-  }
-
-  onSearch(term: string) {
-    this.searchTerm = term;
-    this.currentPage = 0;
-    this.loadData();
-  }
-
-  onSearchInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.onSearch(input.value);
-  }
-
-  onStatusFilterChange(status: string) {
-    this.statusFilter = status;
-    this.currentPage = 0;
-    this.loadData();
-  }
-
-  onPageChange(delta: number) {
-    const nextPage = this.currentPage + delta;
-    const maxPage = Math.floor(this.totalRows / this.pageSize);
-    if (nextPage >= 0 && nextPage <= maxPage) {
-      this.currentPage = nextPage;
-      this.loadData();
-    }
-  }
-
-  onPageSizeChange(newSize: string | number) {
-    this.pageSize = Number(newSize);
-    this.currentPage = 0;
-    this.loadData();
-  }
-
-  onDeleteSelected() {
-    if (!this.gridApi) return;
-
-    const selected = this.gridApi.getSelectedRows();
-    const ids = selected.map((s) => s.id);
-    if (!ids.length) return;
-
-    this.shipmentService.deleteShipments(ids).subscribe({
-      next: () => {
-        this.snackBar.open("Selected shipments deleted.", "Close", {
-          duration: 3000,
-        });
-        this.loadData();
-      },
-      error: () => {
-        this.snackBar.open("Failed to delete shipments", "Close", {
-          duration: 3000,
-        });
-      },
-    });
-  }
-
   onAdd() {
     const dialogRef = this.dialog.open(AddShipmentFormComponent, {
       width: "400px",
     });
     dialogRef.afterClosed().subscribe((result) => {
-      if (result) this.loadData();
+      if (result) this.updateFilters();
     });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }

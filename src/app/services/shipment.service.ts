@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, throwError } from "rxjs";
+import { BehaviorSubject, Observable, throwError, combineLatest } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { Shipment } from "../models/shipment.model";
 
@@ -8,48 +8,68 @@ import { Shipment } from "../models/shipment.model";
 export class ShipmentService {
   private readonly API_URL = "/api/shipments";
 
-  constructor(private http: HttpClient) {}
+  private shipmentsSubject = new BehaviorSubject<Shipment[]>([]);
+  public shipments$ = this.shipmentsSubject.asObservable();
 
-  fetchShipments(params: {
+  private filtersSubject = new BehaviorSubject<{
     page: number;
     pageSize: number;
     searchTerm?: string;
     statusFilter?: string;
     sortField?: keyof Shipment;
     sortDirection?: "asc" | "desc";
-  }): Observable<{ data: Shipment[]; total: number }> {
+  }>({
+    page: 0,
+    pageSize: 10,
+    searchTerm: "",
+    statusFilter: "",
+    sortField: undefined,
+    sortDirection: undefined,
+  });
+
+  public filteredShipments$ = combineLatest([
+    this.shipments$,
+    this.filtersSubject,
+  ]).pipe(
+    map(([shipments, filters]) => {
+      let data = [...shipments];
+
+      if (filters.searchTerm) {
+        const term = filters.searchTerm.toLowerCase();
+        data = data.filter((s) => s.recipientName.toLowerCase().includes(term));
+      }
+
+      if (filters.statusFilter) {
+        data = data.filter((s) => s.status === filters.statusFilter);
+      }
+
+      if (filters.sortField) {
+        data.sort((a, b) => {
+          const aVal = a[filters.sortField!];
+          const bVal = b[filters.sortField!];
+          return (
+            (aVal! < bVal! ? -1 : 1) *
+            (filters.sortDirection === "asc" ? 1 : -1)
+          );
+        });
+      }
+
+      const total = data.length;
+      const start = filters.page * filters.pageSize;
+      const end = start + filters.pageSize;
+      const pagedData = data.slice(start, end);
+
+      return { data: pagedData, total };
+    })
+  );
+
+  constructor(private http: HttpClient) {}
+
+  fetchAndCacheShipments(): Observable<Shipment[]> {
     return this.http.get<Shipment[]>(this.API_URL).pipe(
       map((shipments) => {
-        let data = [...shipments];
-
-        if (params.searchTerm) {
-          const term = params.searchTerm.toLowerCase();
-          data = data.filter((s) =>
-            s.recipientName.toLowerCase().includes(term)
-          );
-        }
-
-        if (params.statusFilter) {
-          data = data.filter((s) => s.status === params.statusFilter);
-        }
-
-        if (params.sortField) {
-          data.sort((a, b) => {
-            const aVal = a[params.sortField!];
-            const bVal = b[params.sortField!];
-            return (
-              (aVal! < bVal! ? -1 : 1) *
-              (params.sortDirection === "asc" ? 1 : -1)
-            );
-          });
-        }
-
-        const total = data.length;
-        const start = params.page * params.pageSize;
-        const end = start + params.pageSize;
-        const pagedData = data.slice(start, end);
-
-        return { data: pagedData, total };
+        this.shipmentsSubject.next(shipments);
+        return shipments;
       }),
       catchError((err) => {
         console.error("Fetch shipments failed:", err);
@@ -58,12 +78,26 @@ export class ShipmentService {
     );
   }
 
+  updateFilters(filters: {
+    page: number;
+    pageSize: number;
+    searchTerm?: string;
+    statusFilter?: string;
+    sortField?: keyof Shipment;
+    sortDirection?: "asc" | "desc";
+  }) {
+    this.filtersSubject.next(filters);
+  }
+
   addShipment(shipment: Shipment): Observable<Shipment> {
-    return this.http
-      .post<Shipment>(this.API_URL, shipment)
-      .pipe(
-        catchError(() => throwError(() => new Error("Failed to add shipment")))
-      );
+    return this.http.post<Shipment>(this.API_URL, shipment).pipe(
+      map((newShipment) => {
+        const current = this.shipmentsSubject.getValue();
+        this.shipmentsSubject.next([...current, newShipment]);
+        return newShipment;
+      }),
+      catchError(() => throwError(() => new Error("Failed to add shipment")))
+    );
   }
 
   deleteShipments(ids: number[]): Observable<void[]> {
@@ -73,18 +107,38 @@ export class ShipmentService {
       );
       Promise.all(requests)
         .then((res) => {
+          const current = this.shipmentsSubject.getValue();
+          this.shipmentsSubject.next(
+            current.filter((s) => !ids.includes(s.id))
+          );
           observer.next(res);
           observer.complete();
         })
-        .catch((err) => observer.error("Failed to delete shipments"));
+        .catch(() => observer.error("Failed to delete shipments"));
     });
   }
 
   clearAll(): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/clear`);
+    return this.http.delete<void>(`${this.API_URL}/clear`).pipe(
+      map(() => {
+        this.shipmentsSubject.next([]);
+      }),
+      catchError((err) => {
+        console.error("Clear shipments failed:", err);
+        return throwError(() => new Error("Failed to clear shipments."));
+      })
+    );
   }
 
   resetShipments(): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/reset`, {});
+    return this.http.post<void>(`${this.API_URL}/reset`, {}).pipe(
+      map(() => {
+        this.fetchAndCacheShipments().subscribe();
+      }),
+      catchError((err) => {
+        console.error("Reset shipments failed:", err);
+        return throwError(() => new Error("Failed to reset shipments."));
+      })
+    );
   }
 }

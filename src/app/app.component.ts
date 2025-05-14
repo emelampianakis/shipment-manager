@@ -31,7 +31,6 @@ export class AppComponent {
   deleteAll() {
     this.shipmentService.clearAll().subscribe({
       next: () => {
-        this.shipmentGrid.loadData();
         this.snackBar.open("All shipments deleted.", "Close", {
           duration: 3000,
         });
@@ -48,7 +47,6 @@ export class AppComponent {
   resetData() {
     this.shipmentService.resetShipments().subscribe({
       next: () => {
-        this.shipmentGrid.loadData();
         this.snackBar.open("Shipments reset to initial state.", "Close", {
           duration: 3000,
         });
