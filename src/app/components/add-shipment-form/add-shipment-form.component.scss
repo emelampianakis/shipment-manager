@@ -1,0 +1,23 @@
+.dialog-content {
+  padding: 1rem 0.5rem;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+button {
+  min-width: 100px;
+}
+
+mat-form-field {
+  display: block;
+}

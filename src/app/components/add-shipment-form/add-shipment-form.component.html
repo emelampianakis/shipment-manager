@@ -1,0 +1,62 @@
+<div class="dialog-content">
+  <h2 mat-dialog-title>Add New Shipment</h2>
+
+  <form [formGroup]="shipmentForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Recipient Name</mat-label>
+      <input matInput formControlName="recipientName" required />
+      <mat-error
+        *ngIf="shipmentForm.get('recipientName')?.hasError('required')"
+      >
+        Recipient name is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Desired Delivery Date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        formControlName="desiredDeliveryDate"
+        required
+        (focus)="picker.open()"
+        [min]="today"
+      />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error
+        *ngIf="shipmentForm.get('desiredDeliveryDate')?.hasError('required')"
+      >
+        Delivery date is required
+      </mat-error>
+      <mat-error
+        *ngIf="
+          shipmentForm.get('desiredDeliveryDate')?.hasError('notFutureDate')
+        "
+      >
+        Date must be in the future
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="Pending">Pending</mat-option>
+        <mat-option value="Shipped">Shipped</mat-option>
+        <mat-option value="Delivered">Delivered</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-button type="button" (click)="onCancel()">Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="isSubmitting || shipmentForm.invalid"
+      >
+        Add
+      </button>
+    </div>
+  </form>
+</div>

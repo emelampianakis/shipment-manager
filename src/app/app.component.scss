@@ -1,0 +1,36 @@
+main {
+  min-height: 80vh;
+}
+
+footer {
+  border-top: 1px solid #ccc;
+  margin-top: 2rem;
+}
+
+.app-toolbar {
+  .toolbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 1rem;
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      max-width: 600px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+}

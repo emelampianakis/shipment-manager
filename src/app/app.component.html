@@ -1,0 +1,38 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <div class="toolbar-content">
+    <div>
+      <span class="title">📦 Shipment Manager</span>
+      <div class="subtitle">
+        Simulates server-side sort/search/pagination, draggable columns,
+        editable status.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button mat-raised-button color="warn" (click)="deleteAll()">
+        <mat-icon>delete</mat-icon>
+        Delete All
+      </button>
+
+      <button mat-raised-button color="accent" (click)="resetData()">
+        <mat-icon>restart_alt</mat-icon>
+        Reset
+      </button>
+
+      <button mat-raised-button color="primary" (click)="simulateError()">
+        <mat-icon>bug_report</mat-icon>
+        Simulate Error
+      </button>
+    </div>
+  </div>
+</mat-toolbar>
+
+<main style="padding: 1rem">
+  <app-shipment-grid></app-shipment-grid>
+</main>
+
+<footer
+  style="padding: 1rem; text-align: center; font-size: 0.9rem; color: #666"
+>
+  &copy; 2025 E.
+</footer>

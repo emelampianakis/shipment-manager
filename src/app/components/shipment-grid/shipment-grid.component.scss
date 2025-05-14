@@ -1,0 +1,108 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  mat-form-field {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    height: 56px;
+  }
+
+  input,
+  .mat-select-trigger {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  button {
+    height: 56px;
+    display: flex;
+    align-items: center;
+  }
+
+  mat-icon {
+    font-size: 20px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+mat-form-field[appearance="fill"] {
+  margin-top: 1rem;
+}
+
+p {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.error {
+  color: red;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+mat-progress-bar {
+  margin-top: 1rem;
+}
+
+.grid-wrapper {
+  width: 100%;
+  height: calc(100vh - 450px);
+  min-height: 300px;
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  span {
+    white-space: nowrap;
+  }
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .page-size-selector {
+    min-width: 150px;
+  }
+}
+
+.empty-message {
+  text-align: center;
+  margin-top: 2rem;
+  color: #888;
+  font-size: 1.1rem;
+  font-style: italic;
+}

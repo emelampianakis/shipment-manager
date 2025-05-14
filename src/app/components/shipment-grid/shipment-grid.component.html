@@ -1,0 +1,76 @@
+<div class="toolbar">
+  <mat-form-field appearance="outline">
+    <mat-label>Search</mat-label>
+    <input matInput (input)="onSearchInput($event)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Status</mat-label>
+    <mat-select (selectionChange)="onStatusFilterChange($event.value)">
+      <mat-option value="">All</mat-option>
+      <mat-option value="Pending">Pending</mat-option>
+      <mat-option value="Shipped">Shipped</mat-option>
+      <mat-option value="Delivered">Delivered</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" (click)="onAdd()">
+    <mat-icon>add</mat-icon> Add
+  </button>
+
+  <button mat-raised-button color="warn" (click)="onDeleteSelected()">
+    <mat-icon>delete</mat-icon> Delete Selected
+  </button>
+</div>
+
+<ag-grid-angular
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  style="width: 100%; height: calc(100vh - 300px)"
+  [pagination]="false"
+  rowSelection="multiple"
+  (gridReady)="onGridReady($event)"
+>
+</ag-grid-angular>
+
+<div class="pagination-bar">
+  <div class="pagination-controls">
+    <button
+      mat-button
+      (click)="onPageChange(-1)"
+      [disabled]="currentPage === 0"
+    >
+      <mat-icon>chevron_left</mat-icon> Prev
+    </button>
+
+    <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+
+    <button
+      mat-button
+      (click)="onPageChange(1)"
+      [disabled]="currentPage + 1 >= totalPages"
+    >
+      Next <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <div class="pagination-info">
+    <span>Showing {{ displayedCount }} of {{ totalRows }} items</span>
+
+    <mat-form-field appearance="fill" class="page-size-selector">
+      <mat-label>Items per page</mat-label>
+      <mat-select
+        [value]="pageSize"
+        (selectionChange)="onPageSizeChange($event.value)"
+      >
+        <mat-option *ngFor="let size of pageSizes" [value]="size">{{
+          size
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+<mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+<div *ngIf="error" class="error">{{ error }}</div>
