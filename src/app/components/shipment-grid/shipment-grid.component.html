@@ -18,7 +18,12 @@
     <mat-icon>add</mat-icon> Add
   </button>
 
-  <button mat-raised-button color="warn" (click)="onDeleteSelected()">
+  <button
+    mat-raised-button
+    color="warn"
+    (click)="onDeleteSelected()"
+    [disabled]="!hasSelection"
+  >
     <mat-icon>delete</mat-icon> Delete Selected
   </button>
 </div>

@@ -83,6 +83,7 @@ export class ShipmentGridComponent implements OnInit {
   sortDirection: "asc" | "desc" | null = null;
   totalPages = 0;
   pageSizes = [5, 10, 20];
+  hasSelection = false;
 
   constructor(
     private shipmentService: ShipmentService,
@@ -102,6 +103,14 @@ export class ShipmentGridComponent implements OnInit {
       "cellValueChanged",
       this.onCellValueChanged.bind(this)
     );
+    this.gridApi.addEventListener(
+      "selectionChanged",
+      this.onSelectionChanged.bind(this)
+    );
+  }
+
+  onSelectionChanged() {
+    this.hasSelection = this.gridApi.getSelectedRows().length > 0;
   }
 
   formatDateTime(params: any): string {
