@@ -95,29 +95,31 @@ export class ShipmentGridComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.shipmentService.fetchAndCacheShipments().subscribe({
-      next: () => {
-        this.subscription.add(
-          this.shipmentService.filteredShipments$.subscribe({
-            next: (res) => {
-              this.rowData = res.data;
-              this.totalRows = res.total;
-              this.displayedCount = res.data.length;
-              this.totalPages = Math.ceil(this.totalRows / this.pageSize);
-              this.loading = false;
-            },
-            error: (err) => {
-              this.errorHandler.handle(err.message);
-              this.loading = false;
-            },
-          })
-        );
-      },
-      error: (err) => {
-        this.errorHandler.handle(err.message);
-        this.loading = false;
-      },
-    });
+    this.updateFilters();
+    // No server side simulation with delay
+    // this.shipmentService.fetchAndCacheShipments().subscribe({
+    //   next: () => {
+    //     this.subscription.add(
+    //       this.shipmentService.filteredShipments$.subscribe({
+    //         next: (res) => {
+    //           this.rowData = res.data;
+    //           this.totalRows = res.total;
+    //           this.displayedCount = res.data.length;
+    //           this.totalPages = Math.ceil(this.totalRows / this.pageSize);
+    //           this.loading = false;
+    //         },
+    //         error: (err) => {
+    //           this.errorHandler.handle(err.message);
+    //           this.loading = false;
+    //         },
+    //       })
+    //     );
+    //   },
+    //   error: (err) => {
+    //     this.errorHandler.handle(err.message);
+    //     this.loading = false;
+    //   },
+    // });
   }
 
   onGridReady(params: GridReadyEvent) {
@@ -186,15 +188,42 @@ export class ShipmentGridComponent implements OnInit {
     this.updateFilters();
   }
 
+  // No server side simulation with delay
+  // updateFilters() {
+  //   this.shipmentService.updateFilters({
+  //     page: this.currentPage,
+  //     pageSize: this.pageSize,
+  //     searchTerm: this.searchTerm,
+  //     statusFilter: this.statusFilter,
+  //     sortField: this.sortField ?? undefined,
+  //     sortDirection: this.sortDirection ?? undefined,
+  //   });
+  // }
+
   updateFilters() {
-    this.shipmentService.updateFilters({
-      page: this.currentPage,
-      pageSize: this.pageSize,
-      searchTerm: this.searchTerm,
-      statusFilter: this.statusFilter,
-      sortField: this.sortField ?? undefined,
-      sortDirection: this.sortDirection ?? undefined,
-    });
+    this.loading = true;
+    this.shipmentService
+      .fetchShipmentsWithParams({
+        page: this.currentPage,
+        pageSize: this.pageSize,
+        searchTerm: this.searchTerm,
+        statusFilter: this.statusFilter,
+        sortField: this.sortField ?? undefined,
+        sortDirection: this.sortDirection ?? undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.rowData = res.data;
+          this.totalRows = res.total;
+          this.displayedCount = res.data.length;
+          this.totalPages = Math.ceil(this.totalRows / this.pageSize);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.errorHandler.handle(err.message);
+          this.loading = false;
+        },
+      });
   }
 
   onDeleteSelected() {
@@ -240,5 +269,9 @@ export class ShipmentGridComponent implements OnInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  refreshGridData() {
+    this.updateFilters();
   }
 }

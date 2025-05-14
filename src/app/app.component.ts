@@ -36,6 +36,10 @@ export class AppComponent {
         this.snackBar.open("All shipments deleted.", "Close", {
           duration: 3000,
         });
+
+        if (this.shipmentGrid) {
+          this.shipmentGrid.refreshGridData();
+        }
       },
       error: () => {
         this.snackBar.open("Failed to delete shipments.", "Close", {
@@ -52,6 +56,9 @@ export class AppComponent {
         this.snackBar.open("Shipments reset to initial state.", "Close", {
           duration: 3000,
         });
+        if (this.shipmentGrid) {
+          this.shipmentGrid.refreshGridData();
+        }
       },
       error: () => {
         this.snackBar.open("Failed to reset shipments.", "Close", {
